@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Canvas</title>
+  <style>
+    canvas {
+      border: 1px solid #000;
+    }
+
+    body {
+      background-color: #ebebeb;
+      cursor: crosshair;
+    }
+
+    .container {
+      position: relative;
+      width: 800px;
+    }
+
+    #buttons {
+      position: absolute;
+      top: 5px;
+      left: 10px;
+    }
+
+    #pencel {
+      background-position: center;
+      background-size: contain;
+    }
+
+    #reset {
+      margin-top: 10px;
+      margin-left: 5px;
+      float: left;
+    }
+
+    .color {
+      width: 20px;
+      height: 20px;
+      float: left;
+      margin-top: 10px;
+      margin-left: 5px;
+      cursor: pointer;
+      border: 1px solid #000;
+      text-align: center;
+    }
+
+    #red {
+      background-color: red;
+    }
+
+    #blue {
+      background-color: blue;
+    }
+
+    #green {
+      background-color: green;
+    }
+
+    #purple {
+      background-color: purple;
+    }
+
+    #yellow {
+      background-color: yellow;
+    }
+
+    #orange {
+      background-color: orange;
+    }
+
+    #pink {
+      background-color: pink;
+    }
+
+    #black {
+      background-color: black;
+    }
+
+    #white {
+      background-color: white;
+    }
+
+    #ebebeb {
+      background-color: #ebebeb;
+      margin-right: 20px;
+    }
+
+    .controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      background-color: white;
+      padding: 10px;
+      margin: 0;
+      display: none;
+      border: 1px solid black;
+      border-radius: 3px;
+      font-family: sans-serif;
+      transition: all 0.3s;
+      width: 20%;
+    }
+
+    #close {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      background-image: url('close-button.png');
+      background-position: center;
+      background-size: contain;
+      border-radius: 50%;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #cursorPosition {
+      width: 3px;
+      height: 20px;
+      background: #000;
+      position: absolute;
+    }
+    .origin{
+      display: none;
+    }
+    .cursorAnimate {
+      display: block;
+      animation: flash .6s infinite ;
+    }
+
+    @keyframes flash {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+  <!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/fabric.js/2.2.3/fabric.min.js'></script> -->
+
+<body>
+  <div class="container">
+
+    <canvas width="800px" height="600px" id="art"></canvas>
+    <span id="cursorPosition" class="origin"></span>
+    <div id="buttons">
+      <div id="pencel" class="color" style="background-image:url(pencel.jpg)"></div>
+      <div id='red' class="color"></div>
+      <div id='blue' class="color"></div>
+      <div id='green' class="color"></div>
+      <div id='purple' class="color"></div>
+      <div id='yellow' class="color"></div>
+      <div id='orange' class="color"></div>
+      <div id='pink' class="color"></div>
+      <div id='black' class="color"></div>
+      <div id='white' class="color"></div>
+      <div id='ebebeb' class="color"></div>
+    </div>
+
+    <div id="ctrlPic">
+      <button id="previousBut">上一張</button>
+      <button id="nextBut">下一張</button>
+      <a href="#" download="dl.png" onclick="this.href=canvas.toDataURL();">下載</a>
+      <p>*點擊投影片可以輸入筆記文字</p>
+      <p>*點擊左上方鉛筆Icon可以繪圖</p>
+      <p>*當左上方鉛筆Icon為反白狀態時，無法使用輸入筆記文字</p>
+    </div>
+
+    <div id="inputPanel" class="controls" style="display: none;">
+      <div class="control">
+        <label>Text</label>
+        <span id="close"></span>
+        <textarea id="input-text"></textarea>
+        <button id="add">Add to canvas</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- partial -->
+  <script>
+    let canvas = document.getElementById('art');
+    let ctx = canvas.getContext('2d');
+    let pencel = document.getElementById('pencel');
+    var counter = 0;
+    pencel.addEventListener('click', (e) => {
+      // console.log(e.target.style.backgroundImage);
+      document.getElementById('inputPanel').style.display = "none";
+      document.getElementById('cursorPosition').style.display="none";
+      function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        return {
+          x: evt.clientX - rect.left,
+          y: evt.clientY - rect.top
+        };
+      }
+
+      function mouseMove(evt) {
+        // console.log('a');
+
+        var mousePos = getMousePos(canvas, evt);
+        ctx.lineTo(mousePos.x, mousePos.y);
+        ctx.stroke();
+      }
+
+      function mousedown(evt) {
+        // console.log('a');
+        if (e.target.style.backgroundImage == 'url("pencel-use.jpg")') {
+          var mousePos = getMousePos(canvas, evt);
+          ctx.beginPath();
+          ctx.moveTo(mousePos.x, mousePos.y);
+          evt.preventDefault();
+          canvas.addEventListener('mousemove', mouseMove, true);
+        }
+      }
+
+      function mouseup(evt) {
+        if (e.target.style.backgroundImage == 'url("pencel-use.jpg")') {
+          canvas.removeEventListener('mousemove', mouseMove, true);
+        }
+      }
+
+      if (e.target.style.backgroundImage == 'url("pencel.jpg")') {
+        canvas.removeEventListener('click', note, true);
+        e.target.style.backgroundImage = "url(pencel-use.jpg)";
+
+        canvas.addEventListener('mousedown', mousedown, true);
+
+        canvas.addEventListener('mouseup', mouseup, true);
+      } else if (e.target.style.backgroundImage == 'url("pencel-use.jpg")') {
+        e.target.style.backgroundImage = "url(pencel.jpg)";
+        canvas.removeEventListener('mousedown', mousedown, true);
+        canvas.removeEventListener('mouseMove', mouseMove, true);
+        canvas.removeEventListener('mouseup', mouseup, true);
+        canvas.addEventListener('click', note, true);
+      }
+
+
+    })
+
+    var colors = ['red', 'blue', 'green', 'purple', 'yellow', 'orange', 'pink', 'black', 'white', 'ebebeb'];
+
+    function listener(i) {
+      document.getElementById(colors[i]).addEventListener('click', function () {
+        ctx.strokeStyle = colors[i];
+      }, false);
+    }
+
+    for (var i = 0; i < colors.length; i++) {
+      listener(i);
+    }
+
+    function b(arr, target, context) {
+      let low = 0
+      let high = arr.length - 1
+      let mid = low + Math.floor((high - low) / 2)
+      let i = 0
+      if (high < low) return -1;
+      while (high > low) {
+        var s = arr.slice(0, mid + 1).join('')
+        var len = context.measureText(s).width
+        if (len < target) {
+          low = mid
+        } else {
+          high = mid - 1
+        }
+        mid = low + Math.floor((high - low + 1) / 2)
+        counter++;
+      }
+      return mid
+    }
+
+    CanvasRenderingContext2D.prototype.wrapText = function (text, x, y, maxWidth, lineHeight, fontSize) {
+      let context = this;
+
+      context.font = `${fontSize}px Noto-Sans-TC`;
+
+      // 字符分隔
+      let arrText = text.split('');
+      let newArrText = new Array();
+
+      for (i = 0; i < arrText.length; i++) {
+        newArrText.push(arrText[i]);
+      }
+
+      let line = '';
+      let start = 0;
+      let end = 0;
+      let lineArr = [];
+      let isEnd = false;
+
+      while (end !== -1) {
+        end = b(newArrText, maxWidth, context)
+        // console.log('start: ' + start, 'end: ' + end)
+        lineArr = newArrText.splice(start, end + 1)
+        line = lineArr.join('')
+        context.fillText(line, x, y);
+        y += lineHeight;
+      }
+    }
+
+    window.addEventListener("load", function () {
+      var img = new Image();
+      img.src = './1.png'
+      var crr = 1;
+
+      function changePic() {
+        img.src = crr + ".png"; //圖片路徑
+      }
+
+      document.getElementById("previousBut").addEventListener("click", function () {
+        if (crr > 1) {
+          crr--;
+        }
+        changePic();
+
+      }, false);
+      document.getElementById("nextBut").addEventListener("click", function () {
+        if (crr < 8) {
+          crr++;
+        }
+        changePic();
+      }, false);
+
+      img.onload = function () {
+        //換算任何大小的圖片可以完整呈現在Canvas內
+        var scale = canvas.width / img.width;
+        var width = img.width * scale;
+        var height = img.height * scale;
+        ctx.drawImage(img, 0, 0, width, height); //drawImage(img,x,y,width,height)
+      }
+    })
+
+    //新增輸入筆記內容
+    let inputPanel = document.getElementById('inputPanel');
+    let add = document.getElementById('add');
+    let close = document.getElementById('close');
+    let mouseX;
+    let mouseY;
+
+    function note(evt) {
+      
+      mouseX = evt.offsetX;
+      mouseY = evt.offsetY;
+      let cursorPosition = document.getElementById('cursorPosition');
+      cursorPosition.classList = 'cursorAnimate';
+      cursorPosition.style = `left:${mouseX-3}px;top:${mouseY-20}px;`;
+
+      inputPanel.style = `display: block;left:${mouseX}px;top:${mouseY}px;`;
+      let inputText = document.getElementById('input-text');
+      inputText.value="請輸入文字";
+      inputText.focus();
+      inputText.select();
+      function createNote() {
+        ctx.fillStyle = "#212121";
+        ctx.wrapText(inputText.value, mouseX, mouseY, 415, 24, 18);
+        inputPanel.style.display = "none";
+        cursorPosition.style.display="none";
+      }
+
+      //優化輸入體驗: 按下Enter也可以輸入文字
+      document.onkeydown = function (e) {
+        let keyNum = window.event ? e.keyCode : e.which; //獲取被按下的鍵值
+        if (keyNum === 13) {
+          createNote();
+        }
+      }
+
+      add.addEventListener('click', createNote, true);
+
+      close.addEventListener('click', function () {
+        inputPanel.style.display = "none";
+        cursorPosition.style.display="none";
+
+      })
+    }
+    canvas.addEventListener('click', note, true)
+  </script>
+  <!-- <script  src="./script.js"></script>	  -->
+  </head>
+</body>
+
+</html>
